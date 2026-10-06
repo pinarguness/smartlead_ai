@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cafe Mola</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;min-height:100vh;
+background:linear-gradient(135deg,#6f4e37,#d9a066);display:flex;flex-direction:column;padding:20px}
+.logo{color:#fff;font-size:1.6rem;font-weight:700}
+.wrap{flex:1;display:flex;justify-content:flex-end;align-items:center}
+.card{width:100%;max-width:420px;padding:20px;border-radius:20px;color:#fff;
+background:rgba(255,255,255,.18);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.35)}
+#yanit{min-height:110px;max-height:240px;overflow:auto;background:rgba(0,0,0,.2);border-radius:12px;padding:10px;margin-bottom:10px}
+input{width:100%;padding:10px;margin:4px 0;border:0;border-radius:10px}
+button{padding:10px 16px;border:0;border-radius:10px;background:#fff;color:#6f4e37;font-weight:700;cursor:pointer;margin-top:4px}
+.sat{display:flex;gap:6px}.sat input{flex:1}
+</style></head><body>
+<div class="logo">☕ Cafe Mola</div>
+<div class="wrap"><div class="card">
+  <div id="yanit">Merhaba! Menü ve rezervasyon için bana sorabilirsiniz.</div>
+  <div class="sat"><input id="mesaj" placeholder="Mesajınız..."><button id="sor">Sor</button></div>
+  <hr style="border-color:rgba(255,255,255,.3)">
+  <input id="isim" placeholder="Adınız"><input id="telefon" placeholder="Telefon">
+  <button id="kaydet">Kaydet</button> <span id="durum"></span>
+</div></div>
+<script>
+// Sohbet geçmişi tarayıcıda tutulur; her istekte backend'e gönderilir
+const gecmis = [];
+const $ = id => document.getElementById(id);
+
+async function sor(){
+  const mesaj = $('mesaj').value.trim(); if(!mesaj) return;
+  $('yanit').innerHTML += `<p><b>Siz:</b> ${esc(mesaj)}</p>`; $('mesaj').value='';
+  try{
+    const r = await fetch('/api/sohbet',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({mesaj, gecmis})});
+    const d = await r.json();
+    const cevap = d.basari ? d.cevap : d.hata;
+    if(d.basari){ gecmis.push({role:'user',content:mesaj},{role:'assistant',content:cevap}); }
+    $('yanit').innerHTML += `<p><b>Asistan:</b> ${esc(cevap)}</p>`;
+  }catch(e){ $('yanit').innerHTML += '<p>Bağlantı hatası.</p>'; }
+  $('yanit').scrollTop = $('yanit').scrollHeight;
+}
+async function kaydet(){
+  const r = await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({isim:$('isim').value, telefon:$('telefon').value,
+      mesaj: gecmis.filter(m=>m.role==='user').map(m=>m.content).join(' | ')})});
+  const d = await r.json();
+  $('durum').textContent = d.basari ? 'Kaydedildi ✓' : d.hata;
+}
+// XSS koruması: kullanıcı metnini HTML olarak yorumlama
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+$('sor').onclick = sor; $('kaydet').onclick = kaydet;
+$('mesaj').addEventListener('keydown',e=>{if(e.key==='Enter')sor();});
+</script></body></html>

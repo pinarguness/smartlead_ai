@@ -1,5 +1,5 @@
-# SmartLead AI
-AI ile sohbet edip ziyaretçilerden iletişim bilgisi (lead) toplayan Flask uygulaması.
+# msun Chatbot (SmartLead AI)
+msun (vegan makyaj markası) için AI ile sohbet edip ziyaretçilerden iletişim bilgisi (lead) toplayan Flask uygulaması.
 Mimari: config -> database (SQL) -> services/ai_service (AI) -> routes (yönlendirme) -> create_app.
 
 ## Çalıştırma
@@ -13,3 +13,5 @@ GET /health · POST /api/sohbet {mesaj, gecmis} · POST /api/leads {isim, telefo
 
 ## Yayın
 Render: Build `pip install -r requirements.txt`, Start `gunicorn run:app`; env: GROQ_API_KEY, SECRET_KEY, FLASK_ENV=production.
+
+Not: Asistanın marka bilgisi config.py içindeki BUSINESS_CONTEXT metnindedir. Render'da ASISTAN_TALIMATI ortam değişkeni tanımlıysa o kullanılır.

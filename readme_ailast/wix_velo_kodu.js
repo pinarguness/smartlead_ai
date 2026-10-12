@@ -1,7 +1,7 @@
 // ====== WIX VELO ======
 // Wix'te: Dev Mode'u aç. Aşağıdaki API adresini Render adresinle değiştir.
 import { fetch } from 'wix-fetch';
-const API = 'https://SENIN-UYGULAMAN.onrender.com';
+const API = 'https://smartlead-ai-r725.onrender.com';
 
 // ---------- 1) KARŞILAMA SAYFASI ----------
 // Elementler ID'leri: #mesajInput, #sorBtn, #yanitText, #isimInput, #telefonInput, #kaydetBtn, #durumText

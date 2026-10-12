@@ -4,7 +4,7 @@ import requests
 from config import Config
 
 GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
-GROQ_MODEL = 'openai/gpt-oss-120b'
+GROQ_MODEL = 'llama-3.1-8b-instant'
 
 
 class AIServiceError(Exception):

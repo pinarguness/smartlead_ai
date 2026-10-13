@@ -11,6 +11,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'gelistirme-anahtari')
     DATABASE_URL = os.environ.get('DATABASE_URL', 'smartlead.db')
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+    GROQ_MODEL = os.environ.get('GROQ_MODEL', 'openai/gpt-oss-20b')
     AI_PROVIDER = os.environ.get('AI_PROVIDER', 'groq')
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
     DEBUG = False

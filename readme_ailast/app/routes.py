@@ -1,6 +1,6 @@
 # app/routes.py — Sadece isteği karşılar, doğrular, doğru katmana yönlendirir.
 # Bu dosyada SQL veya AI API kodu YOKTUR.
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, current_app, jsonify, render_template, request
 
 from app.database import lead_ekle, tum_leadler
 from app.services.ai_service import ai_service, AIServiceError
@@ -28,7 +28,8 @@ def sohbet():
     try:
         cevap = ai_service.yanit_uret(mesaj, veri.get('gecmis'))
         return jsonify({'basari': True, 'cevap': cevap})
-    except AIServiceError:
+    except AIServiceError as e:
+        current_app.logger.error('[SOHBET HATA] %s', e)
         return jsonify({'basari': False,
                         'hata': 'Asistan su an yanit veremiyor, lutfen tekrar deneyin.'}), 503
 

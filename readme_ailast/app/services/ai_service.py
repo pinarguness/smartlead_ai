@@ -1,10 +1,15 @@
 # app/services/ai_service.py — AI çağrıları YALNIZCA burada.
 # Bu dosya Flask/HTTP/veritabanı bilmez; sadece yapay zekâ ile konuşur.
+import logging
 import requests
 from config import Config
 
+logger = logging.getLogger(__name__)
+
 GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
-GROQ_MODEL = 'llama-3.1-8b-instant'
+# llama-3.1-8b-instant, Groq tarafından 16 Ağustos 2026'da kapatıldı.
+# Groq'un önerdiği yedek model: openai/gpt-oss-20b (Render'da GROQ_MODEL ile değiştirilebilir)
+GROQ_MODEL = Config.GROQ_MODEL
 
 
 class AIServiceError(Exception):
@@ -32,19 +37,31 @@ class AIService:
         return mesajlar
 
     def _groq_istegi(self, mesajlar):
-        """Groq API'ye istek atar. Ağ/HTTP hatalarını AIServiceError'a çevirir."""
+        """Groq API'ye istek atar. Ağ/HTTP hatalarını AIServiceError'a çevirir.
+        Hatanın ayrıntısı Render > Logs ekranında görünsün diye loglanır."""
         try:
             r = requests.post(
                 GROQ_URL,
                 headers={'Authorization': f'Bearer {self.api_key}',
                          'Content-Type': 'application/json'},
                 json={'model': GROQ_MODEL, 'messages': mesajlar,
-                      'temperature': 0.6, 'max_tokens': 400},
-                timeout=20,
+                      'temperature': 0.6,
+                      # gpt-oss bir "düşünen" modeldir: düşük bütçe verilirse cevap boş döner.
+                      # Bu yüzden limit yüksek, düşünme eforu düşük tutuluyor.
+                      'max_tokens': 1024,
+                      'reasoning_effort': 'low'},
+                timeout=30,
             )
-            r.raise_for_status()
-            return r.json()['choices'][0]['message']['content'].strip()
+            if not r.ok:
+                logger.error('[AI HATA] Groq durum kodu %s, model=%s, cevap: %s',
+                             r.status_code, GROQ_MODEL, r.text[:500])
+                r.raise_for_status()
+            metin = (r.json()['choices'][0]['message'].get('content') or '').strip()
+            if not metin:
+                raise ValueError('Model bos cevap dondurdu')
+            return metin
         except (requests.RequestException, KeyError, IndexError, ValueError) as e:
+            logger.error('[AI HATA] %s', e)
             raise AIServiceError(f'Yapay zeka servisine ulasilamadi: {e}')
 
     def yanit_uret(self, mesaj, gecmis=None):

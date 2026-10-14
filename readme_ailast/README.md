@@ -15,3 +15,4 @@ GET /health · POST /api/sohbet {mesaj, gecmis} · POST /api/leads {isim, telefo
 Render: Build `pip install -r requirements.txt`, Start `gunicorn run:app`; env: GROQ_API_KEY, SECRET_KEY, FLASK_ENV=production.
 
 Not: Asistanın marka bilgisi config.py içindeki BUSINESS_CONTEXT metnindedir. Render'da ASISTAN_TALIMATI ortam değişkeni tanımlıysa o kullanılır.
+.
